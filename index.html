@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filmkritik Analys - Sentimentanalys för filmrecensioner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f171e;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header styling */
+        header {
+            background: linear-gradient(to right, #0f171e, #1a242f);
+            padding: 20px 0;
+            border-bottom: 1px solid #303a44;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #f5c518;
+            margin-bottom: 15px;
+        }
+
+        .logo i {
+            font-size: 32px;
+        }
+
+        .tagline {
+            color: #aaa;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* Main content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding: 40px 0;
+        }
+
+        /* Analysis section */
+        .analysis-section {
+            background-color: #1a242f;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #f5c518;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            font-size: 26px;
+        }
+
+        /* Input area */
+        .input-area {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #ddd;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            background-color: #0f171e;
+            border: 1px solid #303a44;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #f5c518;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: #f5c518;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: #e0b50f;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #34495e;
+        }
+
+        .btn-example {
+            background-color: #1a242f;
+            color: #f5c518;
+            border: 1px solid #f5c518;
+        }
+
+        .btn-example:hover {
+            background-color: #f5c518;
+            color: #000;
+        }
+
+        /* Results section */
+        .results-section {
+            background-color: #1a242f;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-title {
+            font-size: 24px;
+            color: #f5c518;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .confidence-level {
+            font-size: 18px;
+            color: #aaa;
+        }
+
+        .sentiment-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .sentiment-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 25px;
+            border-radius: 10px;
+            width: 200px;
+            transition: all 0.3s;
+            opacity: 0.6;
+        }
+
+        .sentiment-option.active {
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .sentiment-option.positive.active {
+            background: linear-gradient(to bottom right, rgba(46, 204, 113, 0.2), rgba(39, 174, 96, 0.1));
+            border: 2px solid #2ecc71;
+        }
+
+        .sentiment-option.negative.active {
+            background: linear-gradient(to bottom right, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.1));
+            border: 2px solid #e74c3c;
+        }
+
+        .sentiment-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .positive .sentiment-icon {
+            color: #2ecc71;
+        }
+
+        .negative .sentiment-icon {
+            color: #e74c3c;
+        }
+
+        .sentiment-label {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .sentiment-percentage {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .positive .sentiment-percentage {
+            color: #2ecc71;
+        }
+
+        .negative .sentiment-percentage {
+            color: #e74c3c;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: #0f171e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(to right, #e74c3c, #f5c518, #2ecc71);
+            border-radius: 10px;
+            transition: width 0.8s ease-out;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .analysis-text {
+            background-color: #0f171e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #f5c518;
+        }
+
+        .analysis-text h4 {
+            margin-bottom: 10px;
+            color: #f5c518;
+        }
+
+        /* Examples section */
+        .examples-section {
+            background-color: #1a242f;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .example-card {
+            background-color: #0f171e;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #303a44;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            border-left-color: #f5c518;
+        }
+
+        .example-text {
+            font-style: italic;
+            color: #ddd;
+            margin-bottom: 10px;
+        }
+
+        .example-sentiment {
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .example-positive {
+            color: #2ecc71;
+        }
+
+        .example-negative {
+            color: #e74c3c;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding: 30px 0;
+            border-top: 1px solid #303a44;
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .model-info {
+            text-align: left;
+            background-color: #1a242f;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #f5c518;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .sentiment-display {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .footer-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <span>Filmkritik Analys</span>
+            </div>
+            <div class="tagline">
+                Analysera sentiment i filmrecensioner med maskininlärning - Ange en engelsk mening för att avgöra om den är positiv eller negativ
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main class="main-content">
+            <section class="analysis-section">
+                <h2 class="section-title">
+                    <i class="fas fa-comment-alt"></i>
+                    Analysera filmrecension
+                </h2>
+                <div class="input-area">
+                    <label for="review-text" class="input-label">
+                        Skriv eller klistra in en engelsk filmrecension:
+                    </label>
+                    <textarea id="review-text" placeholder="Exempel: This movie was absolutely fantastic! The acting was superb and the plot kept me engaged from start to finish."></textarea>
+                    
+                    <div class="button-group">
+                        <button id="analyze-btn" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i>
+                            Analysera sentiment
+                        </button>
+                        <button id="clear-btn" class="btn btn-secondary">
+                            <i class="fas fa-eraser"></i>
+                            Rensa
+                        </button>
+                    </div>
+                    
+                    <div class="loading" id="loading-indicator">
+                        <div class="spinner"></div>
+                        <p>Analyserar texten med AI-modellen...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="results-section">
+                <div class="results-header">
+                    <h2 class="results-title">
+                        <i class="fas fa-poll"></i>
+                        Analysresultat
+                    </h2>
+                    <div class="confidence-level" id="confidence-level">
+                        Sannolikhet: <span id="confidence-value">-</span>
+                    </div>
+                </div>
+                
+                <div class="sentiment-display">
+                    <div class="sentiment-option negative" id="negative-sentiment">
+                        <div class="sentiment-icon">
+                            <i class="fas fa-frown"></i>
+                        </div>
+                        <div class="sentiment-label">Negativ</div>
+                        <div class="sentiment-percentage" id="negative-percentage">0%</div>
+                    </div>
+                    
+                    <div class="sentiment-option positive" id="positive-sentiment">
+                        <div class="sentiment-icon">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <div class="sentiment-label">Positiv</div>
+                        <div class="sentiment-percentage" id="positive-percentage">0%</div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>Negativ (0%)</span>
+                        <span>Positiv (100%)</span>
+                    </div>
+                </div>
+                
+                <div class="analysis-text">
+                    <h4>Analys av din text:</h4>
+                    <p id="analysis-output">Ingen analys utförd än. Skriv en filmrecension och klicka på "Analysera sentiment" för att börja.</p>
+                </div>
+            </section>
+
+            <section class="examples-section">
+                <h2 class="section-title">
+                    <i class="fas fa-lightbulb"></i>
+                    Exempel på recensioner att testa
+                </h2>
+                <p>Klicka på ett exempel för att analysera det direkt:</p>
+                
+                <div class="examples-grid">
+                    <div class="example-card" data-example="This movie was absolutely fantastic! The acting was superb and the plot kept me engaged from start to finish.">
+                        <div class="example-text">"This movie was absolutely fantastic! The acting was superb and the plot kept me engaged from start to finish."</div>
+                        <div class="example-sentiment example-positive">
+                            <i class="fas fa-smile"></i>
+                            Förväntat resultat: Positiv
+                        </div>
+                    </div>
+                    
+                    <div class="example-card" data-example="A complete waste of time. Poor acting, terrible dialogue, and a predictable plot that offers nothing new.">
+                        <div class="example-text">"A complete waste of time. Poor acting, terrible dialogue, and a predictable plot that offers nothing new."</div>
+                        <div class="example-sentiment example-negative">
+                            <i class="fas fa-frown"></i>
+                            Förväntat resultat: Negativ
+                        </div>
+                    </div>
+                    
+                    <div class="example-card" data-example="While the cinematography was stunning, the characters felt underdeveloped and the story dragged in the middle section.">
+                        <div class="example-text">"While the cinematography was stunning, the characters felt underdeveloped and the story dragged in the middle section."</div>
+                        <div class="example-sentiment example-negative">
+                            <i class="fas fa-frown"></i>
+                            Förväntat resultat: Negativ (blandad)
+                        </div>
+                    </div>
+                    
+                    <div class="example-card" data-example="An instant classic! The director's vision shines through every frame, with brilliant performances from the entire cast.">
+                        <div class="example-text">"An instant classic! The director's vision shines through every frame, with brilliant performances from the entire cast."</div>
+                        <div class="example-sentiment example-positive">
+                            <i class="fas fa-smile"></i>
+                            Förväntat resultat: Positiv
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Filmkritik Analys - Sentimentanalys för filmrecensioner med TensorFlow.js</p>
+            <div class="footer-info">
+                <div class="model-info">
+                    <p><strong>Modellinformation:</strong> AI-modellen för sentimentanalys laddas från mappen <code>tfjs_model</code>.</p>
+                    <p>Modellen analyserar engelsk text och klassificerar den som positiv eller negativ med en sannolikhet.</p>
+                </div>
+                <div>
+                    <p>Denna applikation använder en förtränad TensorFlow.js-modell för textklassificering.</p>
+                    <p>Modellen finns i undermappen <code>tfjs_model</code> tillsammans med <code>metadata.json</code>.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const reviewTextarea = document.getElementById('review-text');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const positivePercentage = document.getElementById('positive-percentage');
+        const negativePercentage = document.getElementById('negative-percentage');
+        const positiveSentiment = document.getElementById('positive-sentiment');
+        const negativeSentiment = document.getElementById('negative-sentiment');
+        const progressFill = document.getElementById('progress-fill');
+        const analysisOutput = document.getElementById('analysis-output');
+        const confidenceValue = document.getElementById('confidence-value');
+        const exampleCards = document.querySelectorAll('.example-card');
+        
+        // TensorFlow.js model
+        let model = null;
+        let metadata = null;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Laddar TensorFlow.js modell...');
+            
+            // Load model and metadata
+            try {
+                // Show loading state
+                analyzeBtn.disabled = true;
+                analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Laddar modell...';
+                
+                // Load the model from the tfjs_model subfolder
+                model = await tf.loadLayersModel('./tfjs_model/model.json');
+                console.log('Modell laddad:', model);
+                
+                // Load metadata
+                const response = await fetch('./tfjs_model/metadata.json');
+                metadata = await response.json();
+                console.log('Metadata laddad:', metadata);
+                
+                // Update UI to show model is ready
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-chart-bar"></i> Analysera sentiment';
+                analysisOutput.textContent = 'Modell laddad och redo för analys. Skriv eller klistra in en filmrecension ovan.';
+                
+            } catch (error) {
+                console.error('Fel vid laddning av modell:', error);
+                analysisOutput.textContent = 'Kunde inte ladda modellen. Kontrollera att mappen tfjs_model finns med model.json och metadata.json. Fel: ' + error.message;
+                analyzeBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Modell kunde inte laddas';
+            }
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Test the model with a sample if it loaded successfully
+            if (model) {
+                // Test with a sample after a short delay
+                setTimeout(() => {
+                    reviewTextarea.value = "This movie was absolutely fantastic! The acting was superb.";
+                    analyzeText();
+                }, 1000);
+            }
+        });
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            analyzeBtn.addEventListener('click', analyzeText);
+            
+            clearBtn.addEventListener('click', function() {
+                reviewTextarea.value = '';
+                resetResults();
+            });
+            
+            // Add example click handlers
+            exampleCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const exampleText = this.getAttribute('data-example');
+                    reviewTextarea.value = exampleText;
+                    analyzeText();
+                });
+            });
+            
+            // Allow Enter key to trigger analysis (with Ctrl/Cmd)
+            reviewTextarea.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    analyzeText();
+                }
+            });
+        }
+        
+        // Main function to analyze text
+        async function analyzeText() {
+            const text = reviewTextarea.value.trim();
+            
+            if (!text) {
+                alert('Vänligen ange en text att analysera.');
+                return;
+            }
+            
+            if (!model) {
+                alert('Modellen är inte laddad än. Vänta en stund och försök igen.');
+                return;
+            }
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyserar...';
+            
+            try {
+                // Preprocess the text
+                const sequence = preprocessText(text);
+                
+                // Make prediction
+                const prediction = model.predict(sequence);
+                const score = await prediction.data();
+                const positiveProb = score[0];
+                const negativeProb = 1 - positiveProb;
+                
+                // Update UI with results
+                updateResults(positiveProb, negativeProb, text);
+                
+            } catch (error) {
+                console.error('Fel vid analys:', error);
+                analysisOutput.textContent = 'Ett fel uppstod vid analysen: ' + error.message;
+            } finally {
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-chart-bar"></i> Analysera sentiment';
+            }
+        }
+        
+        // Preprocess text for the model
+        function preprocessText(text) {
+            // Convert to lowercase
+            text = text.toLowerCase();
+            
+            // Remove punctuation (simple approach)
+            text = text.replace(/[^\w\s]/g, ' ');
+            
+            // Tokenize (split into words)
+            const tokens = text.split(/\s+/).filter(token => token.length > 0);
+            
+            // Convert tokens to indices based on metadata
+            // This assumes metadata has a word_index object
+            const wordIndex = metadata.word_index || {};
+            const sequence = tokens.map(token => {
+                return wordIndex[token] || 0; // 0 for unknown words
+            });
+            
+            // Pad or truncate to the fixed length (from metadata)
+            const maxLen = metadata.max_len || 100;
+            let paddedSequence = sequence.slice(0, maxLen);
+            
+            if (paddedSequence.length < maxLen) {
+                // Pad with zeros at the end
+                const padding = new Array(maxLen - paddedSequence.length).fill(0);
+                paddedSequence = paddedSequence.concat(padding);
+            }
+            
+            // Convert to tensor
+            return tf.tensor2d([paddedSequence], [1, maxLen]);
+        }
+        
+        // Update UI with analysis results
+        function updateResults(positiveProb, negativeProb, originalText) {
+            // Format probabilities as percentages
+            const positivePercent = Math.round(positiveProb * 100);
+            const negativePercent = Math.round(negativeProb * 100);
+            
+            // Update percentage displays
+            positivePercentage.textContent = `${positivePercent}%`;
+            negativePercentage.textContent = `${negativePercent}%`;
+            
+            // Update confidence value
+            const confidence = Math.max(positiveProb, negativeProb);
+            confidenceValue.textContent = `${Math.round(confidence * 100)}%`;
+            
+            // Update progress bar
+            progressFill.style.width = `${positivePercent}%`;
+            
+            // Update active sentiment
+            if (positiveProb > negativeProb) {
+                positiveSentiment.classList.add('active');
+                negativeSentiment.classList.remove('active');
+            } else {
+                negativeSentiment.classList.add('active');
+                positiveSentiment.classList.remove('active');
+            }
+            
+            // Update analysis text
+            let sentiment = positiveProb > negativeProb ? 'positiv' : 'negativ';
+            let confidenceLevel = '';
+            
+            if (confidence > 0.9) {
+                confidenceLevel = 'mycket hög';
+            } else if (confidence > 0.7) {
+                confidenceLevel = 'hög';
+            } else if (confidence > 0.6) {
+                confidenceLevel = 'måttlig';
+            } else {
+                confidenceLevel = 'läg';
+            }
+            
+            analysisOutput.innerHTML = `
+                Din text analyserades som <strong>${sentiment}</strong> med ${confidenceLevel} sannolikhet (${Math.round(confidence * 100)}%).
+                <br><br>
+                <strong>Analys:</strong> "${originalText.substring(0, 100)}${originalText.length > 100 ? '...' : ''}"
+                <br><br>
+                <strong>Resultat:</strong> ${positivePercent}% positiv, ${negativePercent}% negativ.
+            `;
+            
+            // Update progress labels
+            document.querySelector('.progress-labels').innerHTML = `
+                <span>Negativ (${negativePercent}%)</span>
+                <span>Positiv (${positivePercent}%)</span>
+            `;
+        }
+        
+        // Reset results to initial state
+        function resetResults() {
+            positivePercentage.textContent = '0%';
+            negativePercentage.textContent = '0%';
+            confidenceValue.textContent = '-';
+            progressFill.style.width = '50%';
+            positiveSentiment.classList.remove('active');
+            negativeSentiment.classList.remove('active');
+            analysisOutput.textContent = 'Ingen analys utförd än. Skriv en filmrecension och klicka på "Analysera sentiment" för att börja.';
+            
+            document.querySelector('.progress-labels').innerHTML = `
+                <span>Negativ (0%)</span>
+                <span>Positiv (100%)</span>
+            `;
+        }
+        
+        // Fallback function if model loading fails - uses a simple rule-based approach
+        function fallbackSentimentAnalysis(text) {
+            // Simple rule-based sentiment analysis as fallback
+            const positiveWords = ['good', 'great', 'excellent', 'amazing', 'fantastic', 'wonderful', 'best', 'love', 'liked', 'enjoyed', 'awesome', 'brilliant', 'superb', 'outstanding'];
+            const negativeWords = ['bad', 'terrible', 'awful', 'worst', 'hate', 'dislike', 'poor', 'boring', 'disappointing', 'waste', 'horrible', 'stupid', 'ridiculous'];
+            
+            const lowerText = text.toLowerCase();
+            let positiveCount = 0;
+            let negativeCount = 0;
+            
+            positiveWords.forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'g');
+                const matches = lowerText.match(regex);
+                if (matches) positiveCount += matches.length;
+            });
+            
+            negativeWords.forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'g');
+                const matches = lowerText.match(regex);
+                if (matches) negativeCount += matches.length;
+            });
+            
+            const total = positiveCount + negativeCount;
+            let positiveProb = 0.5; // Default neutral
+            
+            if (total > 0) {
+                positiveProb = positiveCount / total;
+            } else {
+                // If no sentiment words found, check for negation or intensifiers
+                if (lowerText.includes('not bad') || lowerText.includes('not terrible')) {
+                    positiveProb = 0.7;
+                } else if (lowerText.includes('not good') || lowerText.includes('not great')) {
+                    positiveProb = 0.3;
+                }
+            }
+            
+            return positiveProb;
+        }
+    </script>
+</body>
+</html>
