@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <style>
+        /* Samma CSS som tidigare */
         * {
             margin: 0;
             padding: 0;
@@ -26,7 +27,6 @@
             padding: 0 20px;
         }
 
-        /* Header styling */
         header {
             background: linear-gradient(to right, #0f171e, #1a242f);
             padding: 20px 0;
@@ -54,7 +54,6 @@
             margin-bottom: 20px;
         }
 
-        /* Main content */
         .main-content {
             display: flex;
             flex-direction: column;
@@ -62,7 +61,6 @@
             padding: 40px 0;
         }
 
-        /* Analysis section */
         .analysis-section {
             background-color: #1a242f;
             border-radius: 10px;
@@ -79,11 +77,6 @@
             gap: 10px;
         }
 
-        .section-title i {
-            font-size: 26px;
-        }
-
-        /* Input area */
         .input-area {
             margin-bottom: 25px;
         }
@@ -163,7 +156,6 @@
             color: #000;
         }
 
-        /* Results section */
         .results-section {
             background-color: #1a242f;
             border-radius: 10px;
@@ -299,7 +291,6 @@
             color: #f5c518;
         }
 
-        /* Examples section */
         .examples-section {
             background-color: #1a242f;
             border-radius: 10px;
@@ -350,7 +341,6 @@
             color: #e74c3c;
         }
 
-        /* Model info panel */
         .model-info-panel {
             background-color: #1a242f;
             border-radius: 10px;
@@ -377,7 +367,6 @@
             color: #aaa;
         }
 
-        /* Debug info */
         .debug-info {
             background-color: #1a242f;
             border-radius: 5px;
@@ -388,7 +377,6 @@
             border-left: 3px solid #f5c518;
         }
 
-        /* Footer */
         footer {
             margin-top: 40px;
             padding: 30px 0;
@@ -414,7 +402,6 @@
             color: #888;
         }
 
-        /* Loading indicator */
         .loading {
             display: none;
             text-align: center;
@@ -436,7 +423,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive design */
         @media (max-width: 768px) {
             .sentiment-display {
                 flex-direction: column;
@@ -499,9 +485,9 @@
                             <i class="fas fa-eraser"></i>
                             Rensa
                         </button>
-                        <button id="test-model-btn" class="btn btn-example">
-                            <i class="fas fa-vial"></i>
-                            Testa modell
+                        <button id="inspect-metadata-btn" class="btn btn-example">
+                            <i class="fas fa-search"></i>
+                            Inspektera metadata
                         </button>
                     </div>
                     
@@ -513,16 +499,14 @@
                 
                 <div class="model-info-panel">
                     <h4><i class="fas fa-microchip"></i> Modellinformation</h4>
-                    <p>Denna modell kräver exakt 256 tokens som input.</p>
                     <div class="model-details">
                         <div><strong>Krävd input shape:</strong> [batch_size, 256]</div>
-                        <div><strong>Textlängd:</strong> Exakt 256 tokens (padding/trunkering)</div>
-                        <div><strong>Modelltyp:</strong> Textklassificering för sentimentanalys</div>
-                        <div><strong>Utdata:</strong> Sannolikhet för positiv sentiment (0-1)</div>
-                        <div id="actual-input-shape"></div>
+                        <div><strong>Textlängd:</strong> Exakt 256 tokens</div>
+                        <div id="actual-input-shape">Laddar modellinformation...</div>
+                        <div id="vocab-info">Laddar vokabulärinformation...</div>
                     </div>
                     <div class="debug-info" id="debug-info">
-                        Debug: Ingen analys utförd ännu.
+                        Status: Väntar på att modellen ska laddas...
                     </div>
                 </div>
             </section>
@@ -578,35 +562,35 @@
                     <i class="fas fa-lightbulb"></i>
                     Exempel på recensioner att testa
                 </h2>
-                <p>Klicka på ett exempel för att analysera det direkt (kommer automatiskt konverteras till 256 tokens):</p>
+                <p>Klicka på ett exempel för att analysera det direkt:</p>
                 
                 <div class="examples-grid">
-                    <div class="example-card" data-example="This movie was absolutely fantastic! The acting was superb and the plot kept me engaged from start to finish. The cinematography was breathtaking and the soundtrack perfectly complemented every scene. I would highly recommend this film to anyone who enjoys thought-provoking cinema with emotional depth and brilliant performances.">
-                        <div class="example-text">"This movie was absolutely fantastic! The acting was superb and the plot kept me engaged..."</div>
+                    <div class="example-card" data-example="This movie was absolutely fantastic! The acting was superb and the plot kept me engaged from start to finish. The cinematography was breathtaking and the soundtrack perfectly complemented every scene.">
+                        <div class="example-text">"This movie was absolutely fantastic! The acting was superb..."</div>
                         <div class="example-sentiment example-positive">
                             <i class="fas fa-smile"></i>
                             Förväntat: Positiv
                         </div>
                     </div>
                     
-                    <div class="example-card" data-example="A complete waste of time. Poor acting, terrible dialogue, and a predictable plot that offers nothing new. The characters were one-dimensional and the pacing was painfully slow. I found myself checking my phone multiple times throughout this boring, unoriginal film that fails to deliver even basic entertainment value.">
-                        <div class="example-text">"A complete waste of time. Poor acting, terrible dialogue, and a predictable plot..."</div>
+                    <div class="example-card" data-example="A complete waste of time. Poor acting, terrible dialogue, and a predictable plot that offers nothing new. The characters were one-dimensional and the pacing was painfully slow.">
+                        <div class="example-text">"A complete waste of time. Poor acting, terrible dialogue..."</div>
                         <div class="example-sentiment example-negative">
                             <i class="fas fa-frown"></i>
                             Förväntat: Negativ
                         </div>
                     </div>
                     
-                    <div class="example-card" data-example="While the cinematography was stunning and the visual effects were impressive, the characters felt underdeveloped and the story dragged in the middle section. The director had an interesting vision but the execution fell flat. Some moments were truly captivating while others were tedious. Overall, it's a mixed bag that had potential but didn't fully deliver on its promises.">
-                        <div class="example-text">"While the cinematography was stunning and the visual effects were impressive, the characters..."</div>
+                    <div class="example-card" data-example="While the cinematography was stunning, the characters felt underdeveloped and the story dragged in the middle section. The director had an interesting vision but the execution fell flat.">
+                        <div class="example-text">"While the cinematography was stunning, the characters felt underdeveloped..."</div>
                         <div class="example-sentiment example-negative">
                             <i class="fas fa-frown"></i>
-                            Förväntat: Negativ (blandad)
+                            Förväntat: Negativ
                         </div>
                     </div>
                     
-                    <div class="example-card" data-example="An instant classic! The director's vision shines through every frame, with brilliant performances from the entire cast. The screenplay is masterfully written, balancing humor, drama, and suspense perfectly. This is the kind of film that stays with you long after the credits roll. It's a cinematic achievement that will be remembered for years to come.">
-                        <div class="example-text">"An instant classic! The director's vision shines through every frame, with brilliant performances..."</div>
+                    <div class="example-card" data-example="An instant classic! The director's vision shines through every frame, with brilliant performances from the entire cast. The screenplay is masterfully written, balancing humor, drama, and suspense perfectly.">
+                        <div class="example-text">"An instant classic! The director's vision shines through every frame..."</div>
                         <div class="example-sentiment example-positive">
                             <i class="fas fa-smile"></i>
                             Förväntat: Positiv
@@ -622,7 +606,6 @@
                 <div class="model-info">
                     <p><strong>Modellinformation:</strong> AI-modellen för sentimentanalys laddas från mappen <code>tfjs_model</code>.</p>
                     <p><strong>Input dimension:</strong> Modellen kräver exakt <code>[batch_size, 256]</code> som input.</p>
-                    <p>All text konverteras automatiskt till 256 tokens via trunkering eller padding.</p>
                 </div>
                 <div>
                     <p>Denna applikation använder en förtränad TensorFlow.js-modell för textklassificering.</p>
@@ -637,7 +620,7 @@
         const reviewTextarea = document.getElementById('review-text');
         const analyzeBtn = document.getElementById('analyze-btn');
         const clearBtn = document.getElementById('clear-btn');
-        const testModelBtn = document.getElementById('test-model-btn');
+        const inspectMetadataBtn = document.getElementById('inspect-metadata-btn');
         const loadingIndicator = document.getElementById('loading-indicator');
         const positivePercentage = document.getElementById('positive-percentage');
         const negativePercentage = document.getElementById('negative-percentage');
@@ -650,84 +633,76 @@
         const debugInfo = document.getElementById('debug-info');
         const tokenInfo = document.getElementById('token-info');
         const actualInputShape = document.getElementById('actual-input-shape');
+        const vocabInfo = document.getElementById('vocab-info');
         
         // TensorFlow.js model
         let model = null;
         let metadata = null;
-        const REQUIRED_SEQUENCE_LENGTH = 256; // Fast längd på 256 tokens
+        const REQUIRED_SEQUENCE_LENGTH = 256;
         
         // Initialize the application
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Laddar TensorFlow.js modell med required input shape [null, 256]...');
+            console.log('Laddar TensorFlow.js modell...');
+            debugInfo.textContent = 'Laddar modell...';
             
-            // Load model and metadata
             try {
-                // Show loading state
                 analyzeBtn.disabled = true;
-                testModelBtn.disabled = true;
+                inspectMetadataBtn.disabled = true;
                 analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Laddar modell...';
                 
-                // Load the model from the tfjs_model subfolder
-                model = await tf.loadLayersModel('./tfjs_model/model.json');
-                console.log('Modell laddad:', model);
-                
-                // Check model input shape
-                if (model.inputs && model.inputs[0]) {
-                    const inputShape = model.inputs[0].shape;
-                    console.log('Modell input shape:', inputShape);
-                    actualInputShape.innerHTML = `<strong>Inläst input shape:</strong> [${inputShape.join(', ')}]`;
-                    
-                    if (inputShape[1] !== REQUIRED_SEQUENCE_LENGTH) {
-                        console.warn(`Modell förväntar sig ${inputShape[1]} tokens, men vi använder ${REQUIRED_SEQUENCE_LENGTH}`);
-                    }
-                }
-                
-                // Load metadata
+                // Load metadata first
                 const response = await fetch('./tfjs_model/metadata.json');
                 metadata = await response.json();
                 console.log('Metadata laddad:', metadata);
                 
-                // Update UI to show model is ready
+                // Load model
+                model = await tf.loadLayersModel('./tfjs_model/model.json');
+                console.log('Modell laddad:', model);
+                
+                // Display model info
+                if (model.inputs && model.inputs[0]) {
+                    const inputShape = model.inputs[0].shape;
+                    actualInputShape.innerHTML = `<strong>Inläst input shape:</strong> [${inputShape.join(', ')}]`;
+                    
+                    if (inputShape[1] !== REQUIRED_SEQUENCE_LENGTH) {
+                        console.warn(`Modell förväntar ${inputShape[1]} tokens, vi använder ${REQUIRED_SEQUENCE_LENGTH}`);
+                        debugInfo.textContent = `Varning: Modell förväntar ${inputShape[1]} tokens, använder ${REQUIRED_SEQUENCE_LENGTH}`;
+                    }
+                }
+                
+                // Display vocab info
+                const vocabSize = metadata.vocabulary_size || 'Okänt';
+                const wordIndexSize = metadata.word_index ? Object.keys(metadata.word_index).length : 'Okänt';
+                vocabInfo.innerHTML = `<strong>Vokabulär:</strong> ${vocabSize} ord, ${wordIndexSize} indexerade`;
+                
+                // Test with a known sample word
+                if (metadata.word_index) {
+                    const testWords = ['good', 'bad', 'movie', 'great', 'terrible'];
+                    const foundWords = testWords.filter(word => metadata.word_index[word]);
+                    console.log(`Hittade ${foundWords.length} av ${testWords.length} testord i metadata`);
+                }
+                
                 analyzeBtn.disabled = false;
-                testModelBtn.disabled = false;
+                inspectMetadataBtn.disabled = false;
                 analyzeBtn.innerHTML = '<i class="fas fa-chart-bar"></i> Analysera sentiment';
-                analysisOutput.textContent = 'Modell laddad och redo för analys. Skriv eller klistra in en filmrecension ovan.';
-                debugInfo.textContent = 'Modell laddad. Klar för analys.';
+                analysisOutput.textContent = 'Modell laddad. Testa med en filmrecension!';
+                debugInfo.textContent = `Modell laddad. Vokabulär: ${vocabSize} ord.`;
                 
             } catch (error) {
-                console.error('Fel vid laddning av modell:', error);
-                analysisOutput.textContent = 'Kunde inte ladda modellen. Kontrollera att mappen tfjs_model finns med model.json och metadata.json. Fel: ' + error.message;
-                debugInfo.textContent = 'Fel vid laddning av modell: ' + error.message;
+                console.error('Fel vid laddning:', error);
+                debugInfo.textContent = 'Fel: ' + error.message;
+                analysisOutput.textContent = 'Kunde inte ladda modellen. Fel: ' + error.message;
                 analyzeBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Modell kunde inte laddas';
             }
             
-            // Set up event listeners
             setupEventListeners();
-            
-            // Test with a sample after a short delay if model loaded
-            if (model) {
-                setTimeout(() => {
-                    reviewTextarea.value = "This movie was absolutely fantastic! The acting was superb and the cinematography was breathtaking.";
-                    analyzeText();
-                }, 1000);
-            }
         });
         
-        // Set up event listeners
         function setupEventListeners() {
             analyzeBtn.addEventListener('click', analyzeText);
+            clearBtn.addEventListener('click', resetAll);
+            inspectMetadataBtn.addEventListener('click', inspectMetadata);
             
-            clearBtn.addEventListener('click', function() {
-                reviewTextarea.value = '';
-                resetResults();
-                debugInfo.textContent = 'Text rensad.';
-            });
-            
-            testModelBtn.addEventListener('click', function() {
-                testModelWithCorrectInput();
-            });
-            
-            // Add example click handlers
             exampleCards.forEach(card => {
                 card.addEventListener('click', function() {
                     const exampleText = this.getAttribute('data-example');
@@ -736,7 +711,6 @@
                 });
             });
             
-            // Allow Enter key to trigger analysis (with Ctrl/Cmd)
             reviewTextarea.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                     analyzeText();
@@ -744,52 +718,33 @@
             });
         }
         
-        // Test model with correct 256-length input
-        async function testModelWithCorrectInput() {
-            if (!model) {
-                alert('Modellen är inte laddad än.');
+        function inspectMetadata() {
+            if (!metadata) {
+                alert('Metadata inte laddad än.');
                 return;
             }
             
-            try {
-                // Create a tensor with exactly shape [1, 256]
-                const testSequence = [];
-                for (let i = 0; i < REQUIRED_SEQUENCE_LENGTH; i++) {
-                    testSequence.push(i % 1000 + 1); // Fill with sample indices
-                }
-                
-                const testInput = tf.tensor2d([testSequence], [1, REQUIRED_SEQUENCE_LENGTH]);
-                
-                console.log('Testar modell med exakt shape [1, 256]');
-                debugInfo.textContent = `Testar modell med input shape: [1, ${REQUIRED_SEQUENCE_LENGTH}]`;
-                
-                // Make prediction
-                const prediction = model.predict(testInput);
-                const score = await prediction.data();
-                
-                console.log('Testprediktion:', score);
-                debugInfo.textContent += ` | Resultat: ${score[0].toFixed(4)}`;
-                
-                // Display test result
-                analysisOutput.innerHTML = `
-                    <strong>Modelltest genomförd:</strong><br>
-                    Input shape: [1, ${REQUIRED_SEQUENCE_LENGTH}]<br>
-                    Modelloutput: ${score[0].toFixed(4)}<br>
-                    <em>Modellen accepterar input med korrekt shape [1, 256].</em>
-                `;
-                
-                // Clean up tensors
-                testInput.dispose();
-                prediction.dispose();
-                
-            } catch (error) {
-                console.error('Fel vid modelltest:', error);
-                debugInfo.textContent = 'Fel vid test: ' + error.message;
-                analysisOutput.textContent = 'Fel vid test av modellen: ' + error.message;
+            let info = 'Metadata Information:\n\n';
+            info += `Vocabulary size: ${metadata.vocabulary_size || 'Saknas'}\n`;
+            info += `Max sequence length: ${metadata.max_len || 'Saknas'}\n`;
+            info += `Word index keys: ${metadata.word_index ? Object.keys(metadata.word_index).length : 0}\n\n`;
+            
+            // Show some example word mappings
+            if (metadata.word_index) {
+                const sampleWords = ['the', 'movie', 'good', 'bad', 'great', 'terrible', 'love', 'hate'];
+                info += 'Exempel på ord-index:\n';
+                sampleWords.forEach(word => {
+                    if (metadata.word_index[word]) {
+                        info += `${word}: ${metadata.word_index[word]}\n`;
+                    }
+                });
             }
+            
+            console.log('Metadata info:', info);
+            debugInfo.textContent = `Metadata: ${metadata.vocabulary_size || '?'} ord, ${metadata.word_index ? Object.keys(metadata.word_index).length : '?'} index`;
+            alert(info);
         }
         
-        // Main function to analyze text
         async function analyzeText() {
             const text = reviewTextarea.value.trim();
             
@@ -798,26 +753,23 @@
                 return;
             }
             
-            if (!model) {
-                alert('Modellen kunde inte laddas. Använder enkel regelbaserad analys istället.');
+            if (!model || !metadata) {
+                alert('Modellen eller metadata inte laddad. Använder fallback-analys.');
                 const positiveProb = fallbackSentimentAnalysis(text);
                 updateResults(positiveProb, 1 - positiveProb, text);
                 return;
             }
             
-            // Show loading indicator
             loadingIndicator.style.display = 'block';
             analyzeBtn.disabled = true;
             analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyserar...';
-            debugInfo.textContent = 'Startar analys...';
             
             try {
-                // Preprocess the text to create exactly 256 tokens
-                const sequence = preprocessTextTo256Tokens(text);
+                // Create sequence using metadata
+                const sequence = createSequenceFromMetadata(text);
                 
-                // Log the input tensor shape for debugging
-                console.log('Skickar input tensor med shape:', sequence.shape);
-                debugInfo.textContent = `Skapar input med shape: [${sequence.shape.join(', ')}]`;
+                console.log('Skapar input tensor med shape:', sequence.shape);
+                debugInfo.textContent = `Input shape: [${sequence.shape.join(', ')}]`;
                 
                 // Make prediction
                 const prediction = model.predict(sequence);
@@ -825,114 +777,138 @@
                 const positiveProb = score[0];
                 const negativeProb = 1 - positiveProb;
                 
-                // Update UI with results
+                console.log('Prediktion:', positiveProb);
+                
                 updateResults(positiveProb, negativeProb, text);
+                debugInfo.textContent += ` | Resultat: ${positiveProb.toFixed(4)}`;
                 
-                // Update debug info
-                debugInfo.textContent += ` | Resultat: ${positiveProb.toFixed(4)} | Shape OK: [${sequence.shape.join(', ')}]`;
-                
-                // Clean up tensors
+                // Clean up
                 sequence.dispose();
                 prediction.dispose();
                 
             } catch (error) {
-                console.error('Fel vid analys:', error);
-                debugInfo.textContent = 'Fel vid analys: ' + error.message;
-                analysisOutput.textContent = 'Ett fel uppstod vid analysen: ' + error.message;
+                console.error('Analysfel:', error);
+                debugInfo.textContent = 'Fel: ' + error.message;
                 
-                // Try fallback as last resort
+                // Fallback
                 const positiveProb = fallbackSentimentAnalysis(text);
                 updateResults(positiveProb, 1 - positiveProb, text);
             } finally {
-                // Hide loading indicator
                 loadingIndicator.style.display = 'none';
                 analyzeBtn.disabled = false;
                 analyzeBtn.innerHTML = '<i class="fas fa-chart-bar"></i> Analysera sentiment';
             }
         }
         
-        // Preprocess text to create exactly 256 tokens
-        function preprocessTextTo256Tokens(text) {
-            // Convert to lowercase
-            text = text.toLowerCase();
+        function createSequenceFromMetadata(text) {
+            // Get tokenization settings from metadata
+            const wordIndex = metadata.word_index || {};
+            const vocabSize = metadata.vocabulary_size || 10000;
+            const maxLen = metadata.max_len || REQUIRED_SEQUENCE_LENGTH;
             
-            // Remove punctuation (keep basic words)
-            text = text.replace(/[^\w\s']/g, ' ');
+            // Clean and tokenize text
+            const cleanText = text.toLowerCase()
+                .replace(/[^\w\s']/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
             
-            // Tokenize (split into words)
-            const tokens = text.split(/\s+/).filter(token => token.length > 0);
+            const tokens = cleanText.split(/\s+/);
             
-            // Log original token count
-            console.log(`Original text har ${tokens.length} tokens`);
-            tokenInfo.textContent = `Text tokeniserad: ${tokens.length} tokens → konverteras till ${REQUIRED_SEQUENCE_LENGTH} tokens`;
-            
-            // Get word index from metadata or use simple mapping
-            const wordIndex = metadata?.word_index || {};
-            const vocabSize = metadata?.vocabulary_size || 10000;
+            // Debug tokenization
+            console.log(`Original: "${text.substring(0, 50)}..."`);
+            console.log(`Clean: "${cleanText.substring(0, 50)}..."`);
+            console.log(`Tokens: ${tokens.length} tokens`);
+            console.log('Sample tokens:', tokens.slice(0, 10));
             
             // Convert tokens to indices
-            let sequence = [];
+            const sequence = [];
+            const unknownWords = [];
+            
             for (const token of tokens) {
-                if (sequence.length >= REQUIRED_SEQUENCE_LENGTH) {
-                    break; // Stop if we already have enough tokens
-                }
+                if (sequence.length >= maxLen) break;
                 
                 let index = wordIndex[token];
-                if (!index && token in wordIndex) {
-                    index = wordIndex[token];
-                } else if (!index) {
-                    // For unknown words, use a hash function or UNK token
-                    // Simple hash function to map to a range within vocabulary
-                    let hash = 0;
-                    for (let i = 0; i < token.length; i++) {
-                        hash = ((hash << 5) - hash) + token.charCodeAt(i);
-                        hash = hash & hash; // Convert to 32-bit integer
+                
+                if (!index) {
+                    // Check for common variations
+                    const variations = [
+                        token,
+                        token.replace(/'s$/, ''),
+                        token.replace(/s$/, ''),
+                        token.replace(/ing$/, ''),
+                        token.replace(/ed$/, '')
+                    ];
+                    
+                    for (const variation of variations) {
+                        if (wordIndex[variation]) {
+                            index = wordIndex[variation];
+                            break;
+                        }
                     }
-                    index = Math.abs(hash) % (vocabSize - 1) + 1; // +1 to reserve 0 for padding
+                    
+                    if (!index) {
+                        // Unknown word - use UNK token or hash
+                        index = wordIndex['<UNK>'] || wordIndex['unk'] || 1;
+                        unknownWords.push(token);
+                    }
                 }
                 
                 sequence.push(index);
             }
             
-            // Ensure we have exactly REQUIRED_SEQUENCE_LENGTH tokens
-            if (sequence.length > REQUIRED_SEQUENCE_LENGTH) {
-                // Truncate if too long
-                sequence = sequence.slice(0, REQUIRED_SEQUENCE_LENGTH);
-            } else if (sequence.length < REQUIRED_SEQUENCE_LENGTH) {
-                // Pad with zeros if too short
-                const paddingLength = REQUIRED_SEQUENCE_LENGTH - sequence.length;
-                for (let i = 0; i < paddingLength; i++) {
-                    sequence.push(0); // 0 is typically used for padding
-                }
+            // Log unknown words
+            if (unknownWords.length > 0) {
+                console.log(`Okända ord (${unknownWords.length}):`, unknownWords.slice(0, 10));
+                tokenInfo.textContent = `${unknownWords.length} okända ord hittades.`;
+            } else {
+                tokenInfo.textContent = `Alla ${tokens.length} tokens hittades i vokabulären.`;
+            }
+            
+            // Pad or truncate to exact length
+            const finalSequence = [];
+            
+            if (sequence.length > maxLen) {
+                // Truncate
+                finalSequence.push(...sequence.slice(0, maxLen));
+                console.log(`Trunkerade från ${sequence.length} till ${maxLen} tokens`);
+            } else if (sequence.length < maxLen) {
+                // Pad with zeros
+                finalSequence.push(...sequence);
+                const padding = new Array(maxLen - sequence.length).fill(0);
+                finalSequence.push(...padding);
+                console.log(`Paddade från ${sequence.length} till ${maxLen} tokens`);
+            } else {
+                finalSequence.push(...sequence);
             }
             
             // Verify length
-            if (sequence.length !== REQUIRED_SEQUENCE_LENGTH) {
-                throw new Error(`Sequence length is ${sequence.length}, should be ${REQUIRED_SEQUENCE_LENGTH}`);
+            if (finalSequence.length !== maxLen) {
+                throw new Error(`Felaktig sekvenslängd: ${finalSequence.length}, förväntade ${maxLen}`);
             }
             
-            // Convert to tensor with shape [1, 256]
-            return tf.tensor2d([sequence], [1, REQUIRED_SEQUENCE_LENGTH]);
+            console.log(`Skapar tensor med ${finalSequence.length} värden`);
+            console.log('Första 10 värden:', finalSequence.slice(0, 10));
+            
+            return tf.tensor2d([finalSequence], [1, maxLen]);
         }
         
-        // Update UI with analysis results
         function updateResults(positiveProb, negativeProb, originalText) {
-            // Format probabilities as percentages
+            // Format probabilities
             const positivePercent = Math.round(positiveProb * 100);
             const negativePercent = Math.round(negativeProb * 100);
             
-            // Update percentage displays
+            // Update displays
             positivePercentage.textContent = `${positivePercent}%`;
             negativePercentage.textContent = `${negativePercent}%`;
             
-            // Update confidence value
+            // Update confidence
             const confidence = Math.max(positiveProb, negativeProb);
             confidenceValue.textContent = `${Math.round(confidence * 100)}%`;
             
             // Update progress bar
             progressFill.style.width = `${positivePercent}%`;
             
-            // Update active sentiment
+            // Update sentiment display
             if (positiveProb > negativeProb) {
                 positiveSentiment.classList.add('active');
                 negativeSentiment.classList.remove('active');
@@ -941,31 +917,32 @@
                 positiveSentiment.classList.remove('active');
             }
             
-            // Update analysis text
-            let sentiment = positiveProb > negativeProb ? 'positiv' : 'negativ';
+            // Create analysis text
+            const sentiment = positiveProb > negativeProb ? 'POSITIV' : 'NEGATIV';
+            const sentimentColor = positiveProb > negativeProb ? '#2ecc71' : '#e74c3c';
+            const sentimentIcon = positiveProb > negativeProb ? '😊' : '😞';
+            
             let confidenceLevel = '';
+            if (confidence > 0.9) confidenceLevel = 'mycket hög';
+            else if (confidence > 0.7) confidenceLevel = 'hög';
+            else if (confidence > 0.6) confidenceLevel = 'måttlig';
+            else confidenceLevel = 'låg';
             
-            if (confidence > 0.9) {
-                confidenceLevel = 'mycket hög';
-            } else if (confidence > 0.7) {
-                confidenceLevel = 'hög';
-            } else if (confidence > 0.6) {
-                confidenceLevel = 'måttlig';
-            } else {
-                confidenceLevel = 'låg';
-            }
-            
-            // Truncate original text for display
-            const displayText = originalText.length > 120 
-                ? originalText.substring(0, 120) + '...' 
+            // Display result
+            const displayText = originalText.length > 100 
+                ? originalText.substring(0, 100) + '...' 
                 : originalText;
             
             analysisOutput.innerHTML = `
-                Din text analyserades som <strong>${sentiment}</strong> med ${confidenceLevel} sannolikhet (${Math.round(confidence * 100)}%).
+                <span style="color: ${sentimentColor}; font-weight: bold;">
+                    ${sentimentIcon} ${sentiment} SENTIMENT
+                </span>
                 <br><br>
-                <strong>Analyserad text:</strong> "${displayText}"
+                <strong>Sannolikhet:</strong> ${positivePercent}% positiv, ${negativePercent}% negativ
+                <br>
+                <strong>Konfidens:</strong> ${confidenceLevel} (${Math.round(confidence * 100)}%)
                 <br><br>
-                <strong>Resultat:</strong> ${positivePercent}% positiv, ${negativePercent}% negativ.
+                <strong>Text analyserad:</strong> "${displayText}"
             `;
             
             // Update progress labels
@@ -975,8 +952,8 @@
             `;
         }
         
-        // Reset results to initial state
-        function resetResults() {
+        function resetAll() {
+            reviewTextarea.value = '';
             positivePercentage.textContent = '0%';
             negativePercentage.textContent = '0%';
             confidenceValue.textContent = '-';
@@ -985,61 +962,77 @@
             negativeSentiment.classList.remove('active');
             analysisOutput.textContent = 'Ingen analys utförd än. Skriv en filmrecension och klicka på "Analysera sentiment" för att börja.';
             tokenInfo.textContent = '';
-            
             document.querySelector('.progress-labels').innerHTML = `
                 <span>Negativ (0%)</span>
                 <span>Positiv (100%)</span>
             `;
+            debugInfo.textContent = 'Allt rensat. Klar för ny analys.';
         }
         
-        // Fallback function if model loading fails - uses a simple rule-based approach
         function fallbackSentimentAnalysis(text) {
-            // Simple rule-based sentiment analysis as fallback
-            const positiveWords = ['good', 'great', 'excellent', 'amazing', 'fantastic', 'wonderful', 'best', 'love', 'liked', 'enjoyed', 'awesome', 'brilliant', 'superb', 'outstanding', 'masterpiece', 'perfect', 'beautiful', 'engaging', 'captivating', 'emotional', 'powerful', 'recommend', 'enjoyable', 'impressive'];
-            const negativeWords = ['bad', 'terrible', 'awful', 'worst', 'hate', 'dislike', 'poor', 'boring', 'disappointing', 'waste', 'horrible', 'stupid', 'ridiculous', 'predictable', 'slow', 'dull', 'unoriginal', 'forgettable', 'confusing', 'messy', 'disjointed', 'avoid', 'skip', 'pointless'];
+            // Enhanced fallback analysis
+            const positivePatterns = [
+                /\b(great|excellent|amazing|fantastic|wonderful|best|love|liked|enjoyed|awesome|brilliant|superb|outstanding)\b/gi,
+                /\b(good|nice|pleasant|enjoyable|positive|recommend)\b/gi,
+                /\b(masterpiece|perfect|beautiful|engaging|captivating|emotional|powerful)\b/gi,
+                /!\s*$/,
+                /\b(one of the best|highly recommend|must see|worth watching)\b/gi
+            ];
+            
+            const negativePatterns = [
+                /\b(bad|terrible|awful|worst|hate|dislike|poor|boring|disappointing)\b/gi,
+                /\b(waste|horrible|stupid|ridiculous|predictable|slow|dull|unoriginal)\b/gi,
+                /\b(forgettable|confusing|messy|disjointed|avoid|skip|pointless)\b/gi,
+                /\b(not good|not great|disappointingly|waste of time)\b/gi
+            ];
             
             const lowerText = text.toLowerCase();
-            let positiveCount = 0;
-            let negativeCount = 0;
+            let positiveScore = 0;
+            let negativeScore = 0;
             
-            positiveWords.forEach(word => {
-                const regex = new RegExp(`\\b${word}\\b`, 'g');
-                const matches = lowerText.match(regex);
-                if (matches) positiveCount += matches.length;
+            // Count positive patterns
+            positivePatterns.forEach(pattern => {
+                const matches = lowerText.match(pattern);
+                if (matches) positiveScore += matches.length * 2;
             });
             
-            negativeWords.forEach(word => {
-                const regex = new RegExp(`\\b${word}\\b`, 'g');
-                const matches = lowerText.match(regex);
-                if (matches) negativeCount += matches.length;
+            // Count negative patterns
+            negativePatterns.forEach(pattern => {
+                const matches = lowerText.match(pattern);
+                if (matches) negativeScore += matches.length * 2;
             });
             
-            const total = positiveCount + negativeCount;
-            let positiveProb = 0.5; // Default neutral
+            // Adjust for negations
+            if (lowerText.includes('not bad') || lowerText.includes('not terrible')) {
+                positiveScore += 3;
+                negativeScore -= 2;
+            }
             
-            if (total > 0) {
-                positiveProb = positiveCount / total;
+            if (lowerText.includes('not good') || lowerText.includes('not great')) {
+                negativeScore += 3;
+                positiveScore -= 2;
+            }
+            
+            // Adjust for intensifiers
+            if (lowerText.includes('really ') || lowerText.includes('very ') || lowerText.includes('absolutely ')) {
+                positiveScore += 1;
+                negativeScore += 1;
+            }
+            
+            // Calculate probability
+            const total = positiveScore + negativeScore;
+            let positiveProb;
+            
+            if (total === 0) {
+                positiveProb = 0.5; // Neutral
             } else {
-                // If no sentiment words found, check for negation or intensifiers
-                if (lowerText.includes('not bad') || lowerText.includes('not terrible') || lowerText.includes('surprisingly good')) {
-                    positiveProb = 0.7;
-                } else if (lowerText.includes('not good') || lowerText.includes('not great') || lowerText.includes('disappointingly')) {
-                    positiveProb = 0.3;
-                } else if (lowerText.includes('!') && lowerText.length < 20) {
-                    // Short exclamations might be positive
-                    positiveProb = 0.6;
-                }
+                positiveProb = positiveScore / total;
             }
             
-            // Adjust probability based on exclamation marks vs question marks
-            const exclamationCount = (lowerText.match(/!/g) || []).length;
-            const questionCount = (lowerText.match(/\?/g) || []).length;
+            // Clamp between 0.1 and 0.9
+            positiveProb = Math.max(0.1, Math.min(0.9, positiveProb));
             
-            if (exclamationCount > questionCount) {
-                positiveProb = Math.min(0.95, positiveProb + 0.1);
-            } else if (questionCount > exclamationCount) {
-                positiveProb = Math.max(0.05, positiveProb - 0.1);
-            }
+            console.log(`Fallback analys: positiveScore=${positiveScore}, negativeScore=${negativeScore}, prob=${positiveProb}`);
             
             return positiveProb;
         }
